@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocean Deadline Tracker - Giao diện mẫu</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+    <div id="app" class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-tr from-blue-600 to-cyan-500 p-2 rounded-xl text-white shadow-lg shadow-blue-500/30">
+                        <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold tracking-tight">Ocean Deadline Tracker</h1>
+                        <p class="text-xs text-slate-400">Hệ thống giám sát hạn xử lý hồ sơ & Cảnh báo khóa tên miền (Bản mẫu)</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="bg-emerald-500/20 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-500/30">
+                        🟢 Đang chạy bản xem trước
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+            <!-- KPI Stats Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4" id="stats-container">
+                <!-- Sẽ được render bằng JS -->
+            </div>
+
+            <!-- Task List Section -->
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                <div class="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="relative w-full sm:w-80">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input 
+                            type="text" 
+                            id="search-input"
+                            placeholder="Tìm mã đơn, tên miền..."
+                            oninput="filterOrders()"
+                            class="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                        >
+                    </div>
+                    <div class="flex items-center space-x-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0">
+                        <span class="text-xs font-medium text-slate-500 whitespace-nowrap">Lọc nhanh:</span>
+                        <button onclick="setTab('all')" id="tab-all" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition bg-slate-800 text-white">Tất cả</button>
+                        <button onclick="setTab('today')" id="tab-today" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition bg-indigo-50 text-indigo-700 hover:bg-indigo-100">Hẹn gọi hôm nay</button>
+                        <button onclick="setTab('critical')" id="tab-critical" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition bg-orange-50 text-orange-700 hover:bg-orange-100">Nguy cơ khóa</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100/70 text-slate-600 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
+                                <th class="py-3.5 px-4">Mã đơn & Tên miền</th>
+                                <th class="py-3.5 px-4">Ngày tiếp nhận</th>
+                                <th class="py-3.5 px-4">Hạn xử lý (10 ngày)</th>
+                                <th class="py-3.5 px-4">Trạng thái / Cảnh báo</th>
+                                <th class="py-3.5 px-4">Hồ sơ giấy tờ</th>
+                                <th class="py-3.5 px-4 text-right">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body" class="divide-y divide-slate-200 text-sm">
+                            <!-- Dữ liệu render bằng JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+            Ocean Deadline Tracker MVP © 2026 - CSKH Ocean Department (Standalone Preview)
+        </footer>
+    </div>
+
+    <!-- Modal Chi Tiết -->
+    <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div>
+                    <h2 id="modal-domain" class="text-lg font-bold text-slate-900"></h2>
+                    <p id="modal-code" class="text-xs text-slate-500 mt-1"></p>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-6 flex-1">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800 mb-3">Trạng thái Hồ sơ</h3>
+                    <div id="modal-docs" class="space-y-2"></div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <h3 class="text-sm font-bold text-slate-800">Ghi nhận liên hệ & Lịch hẹn</h3>
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 block mb-1">Kết quả liên hệ</label>
+                        <select id="log-result" class="w-full text-sm border border-slate-300 rounded-lg p-2 bg-white">
+                            <option value="contacted">Thành công (Đã trao đổi)</option>
+                            <option value="no_answer">Khách không nghe máy</option>
+                            <option value="waiting_documents">Khách hẹn bổ sung giấy tờ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 block mb-1">Ghi chú xử lý</label>
+                        <input type="text" id="log-note" placeholder="VD: Khách hẹn gửi bù giấy tờ..." class="w-full text-sm border border-slate-300 rounded-lg p-2 bg-white">
+                    </div>
+                    <button onclick="saveContactLog()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 rounded-lg text-sm transition">
+                        Lưu lịch sử liên hệ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu mẫu khởi tạo
+        let orders = [
+            { id: '1', orderCode: 'OCN-2026001', domainName: 'ocean-tech.vn', orderType: 'Tên miền .VN', receivedAt: '2026-06-01', deadlineAt: '2026-06-11', daysLeft: -2, status: 'overdue', docs: [{ name: 'Bản khai', done: false }, { name: 'CCCD', done: false }] },
+            { id: '2', orderCode: 'OCN-2026002', domainName: 'duytan-store.com', orderType: 'Tên miền QT', receivedAt: '2026-06-08', deadlineAt: '2026-06-18', daysLeft: 1, status: 'critical', docs: [{ name: 'Bản khai', done: true }, { name: 'CCCD', done: false }] },
+            { id: '3', orderCode: 'OCN-2026003', domainName: 'techasia.io', orderType: 'Tên miền QT', receivedAt: '2026-06-09', deadlineAt: '2026-06-19', daysLeft: 3, status: 'due_soon', docs: [{ name: 'Bản khai', done: true }, { name: 'CCCD', done: true }] },
+            { id: '4', orderCode: 'OCN-2026004', domainName: 'logistics-global.vn', orderType: 'Tên miền .VN', receivedAt: '2026-06-04', deadlineAt: '2026-06-14', daysLeft: -1, status: 'overdue', docs: [{ name: 'Bản khai', done: false }, { name: 'CCCD', done: false }] },
+            { id: '5', orderCode: 'OCN-2026005', domainName: 'vietnam-import.com.vn', orderType: 'Tên miền .VN', receivedAt: '2026-06-10', deadlineAt: '2026-06-20', daysLeft: 5, status: 'processing', docs: [{ name: 'Bản khai', done: true }, { name: 'CCCD', done: true }] },
+        ];
+
+        let currentTab = 'all';
+        let currentOrderId = null;
+
+        function render() {
+            // Render Stats
+            const totalUnfinished = orders.filter(o => o.status !== 'completed').length;
+            const criticalCount = orders.filter(o => o.daysLeft <= 1 && o.daysLeft >= 0).length;
+            const dueSoonCount = orders.filter(o => o.daysLeft > 1 && o.daysLeft <= 3).length;
+            const overdueCount = orders.filter(o => o.daysLeft < 0).length;
+
+            document.getElementById('stats-container').innerHTML = `
+                <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div class="text-xs font-semibold text-slate-500 uppercase">Chưa xong</div>
+                    <div class="text-2xl font-bold text-slate-800 mt-1">${totalUnfinished}</div>
+                </div>
+                <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div class="text-xs font-semibold text-orange-500 uppercase">Nguy cơ khóa (≤1 ngày)</div>
+                    <div class="text-2xl font-bold text-orange-600 mt-1">${criticalCount}</div>
+                </div>
+                <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div class="text-xs font-semibold text-amber-500 uppercase">Sắp đến hạn (2-3 ngày)</div>
+                    <div class="text-2xl font-bold text-amber-600 mt-1">${dueSoonCount}</div>
+                </div>
+                <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div class="text-xs font-semibold text-red-500 uppercase">Đã quá hạn</div>
+                    <div class="text-2xl font-bold text-red-600 mt-1">${overdueCount}</div>
+                </div>
+            `;
+
+            // Render Table
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+            const filtered = orders.filter(o => {
+                const matchSearch = o.domainName.toLowerCase().includes(searchVal) || o.orderCode.toLowerCase().includes(searchVal);
+                if (!matchSearch) return false;
+                if (currentTab === 'today') return o.daysLeft === 2; // Giả lập hẹn hôm nay
+                if (currentTab === 'critical') return o.daysLeft <= 1;
+                return true;
+            });
+
+            let html = '';
+            if (filtered.length === 0) {
+                html = `<tr><td colspan="6" class="py-8 text-center text-slate-400">Không tìm thấy đơn hàng nào.</td></tr>`;
+            } else {
+                filtered.forEach(o => {
+                    let badge = '';
+                    if (o.daysLeft < 0) badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200">Quá hạn ${Math.abs(o.daysLeft)} ngày</span>`;
+                    else if (o.daysLeft <= 1) badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200">Nguy cơ khóa (${o.daysLeft} ngày)</span>`;
+                    else if (o.daysLeft <= 3) badge = `<span class="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">Còn ${o.daysLeft} ngày</span>`;
+                    else badge = `<span class="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">Còn ${o.daysLeft} ngày</span>`;
+
+                    html += `
+                        <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="openModal('${o.id}')">
+                            <td class="py-3.5 px-4 font-semibold text-slate-900">${o.domainName}<div class="text-xs text-slate-400 font-normal">${o.orderCode}</div></td>
+                            <td class="py-3.5 px-4 text-xs text-slate-600">${o.receivedAt}</td>
+                            <td class="py-3.5 px-4 text-xs text-slate-600">${o.deadlineAt}</td>
+                            <td class="py-3.5 px-4">${badge}</td>
+                            <td class="py-3.5 px-4 text-xs text-slate-600">${o.docs.filter(d=>d.done).length}/${o.docs.length} hoàn thành</td>
+                            <td class="py-3.5 px-4 text-right"><button class="text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg font-medium">Chi tiết</button></td>
+                        </tr>
+                    `;
+                });
+            }
+            document.getElementById('orders-table-body').innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function setTab(tab) {
+            currentTab = tab;
+            ['all', 'today', 'critical'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    el.className = "px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition bg-slate-800 text-white";
+                } else {
+                    el.className = "px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition bg-slate-100 text-slate-700 hover:bg-slate-200";
+                }
+            });
+            render();
+        }
+
+        function filterOrders() { render(); }
+
+        function openModal(id) {
+            currentOrderId = id;
+            const order = orders.find(o => o.id === id);
+            document.getElementById('modal-domain').innerText = order.domainName;
+            document.getElementById('modal-code').innerText = `${order.orderCode} • Hạn đến: ${order.deadlineAt}`;
+            
+            let docHtml = '';
+            order.docs.forEach((d, idx) => {
+                docHtml += `<div class="p-3 border rounded-xl flex items-center justify-between bg-white">
+                    <span class="text-sm font-medium">${d.name}</span>
+                    <span class="text-xs font-semibold ${d.done ? 'text-emerald-600' : 'text-amber-600'}">${d.done ? 'Đã nhận' : 'Còn thiếu'}</span>
+                </div>`;
+            });
+            document.getElementById('modal-docs').innerHTML = docHtml;
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+        }
+
+        function saveContactLog() {
+            alert('Đã ghi nhận lịch sử tương tác thành công!');
+            closeModal();
+        }
+
+        // Khởi chạy
+        window.onload = () => {
+            render();
+        };
+    </script>
+</body>
+</html>
